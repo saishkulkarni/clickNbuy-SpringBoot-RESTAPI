@@ -22,6 +22,6 @@ public class UserDto {
 	@DecimalMin(value = "6000000000", message = "Enter Proper Mobile Number")
 	@DecimalMax(value = "9999999999", message = "Enter Proper Mobile Number")
 	private Long mobile;
-	@NotEmpty
+	@NotEmpty(message="Role Should be Present")
 	private String role;
 }
