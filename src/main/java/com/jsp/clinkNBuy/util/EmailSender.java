@@ -23,4 +23,16 @@ public class EmailSender {
 			System.err.println("The OTP is :" + otp);
 		}
 	}
+
+	public void sendForgotOtp(String email, int otp, String name) {
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(email);
+			message.setSubject("Otp for Updating Password");
+			message.setText("Hello " + name + " , Your OTP is " + otp+" , It is valid only for 5 mins, You can use this for Updating Password");
+			mailSender.send(message);
+		} catch (Exception e) {
+			System.err.println("The OTP is :" + otp);
+		}
+	}
 }
