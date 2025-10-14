@@ -1,49 +1,54 @@
 package com.jsp.clinkNBuy.security;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.jsp.clinkNBuy.exception.GlobalExceptionHandler;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
 
-	private final String SECRET_KEY;
+	private final Key key;
 
-	public JwtUtil(@Value("${jwt.secret}") String secretKey) {
-		SECRET_KEY = secretKey;
+	public JwtUtil(@Value("${jwt.secret}") String secretKey, GlobalExceptionHandler globalExceptionHandler) {
+		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
 	}
 
 	public String generateToken(UserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
-		return createToken(claims, userDetails.getUsername());
-	}
+		String role = userDetails.getAuthorities().iterator().next().getAuthority();
+		claims.put("role", role);
 
-	private String createToken(Map<String, Object> claims, String subject) {
-		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour expiry
-				.signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+		return Jwts.builder().claims(claims).subject(userDetails.getUsername())
+				.issuedAt(new Date(System.currentTimeMillis()))
+				.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
+				.signWith(key).compact();
 	}
 
 	public String extractUsername(String token) {
-		return extractClaim(token, Claims::getSubject);
+		return extractAllClaims(token).getSubject();
+	}
+
+	public SimpleGrantedAuthority extractRole(String token) {
+		Claims claims = extractAllClaims(token);
+		String role = claims.get("role", String.class);
+		return new SimpleGrantedAuthority(role);
 	}
 
 	public Date extractExpiration(String token) {
-		return extractClaim(token, Claims::getExpiration);
-	}
-
-	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-		final Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-		return claimsResolver.apply(claims);
+		return extractAllClaims(token).getExpiration();
 	}
 
 	public boolean validateToken(String token, UserDetails userDetails) {
@@ -53,5 +58,9 @@ public class JwtUtil {
 
 	private boolean isTokenExpired(String token) {
 		return extractExpiration(token).before(new Date());
+	}
+
+	private Claims extractAllClaims(String token) {
+		return Jwts.parser().setSigningKey(key).build().parseSignedClaims(token).getPayload();
 	}
 }

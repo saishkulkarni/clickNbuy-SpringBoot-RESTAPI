@@ -6,11 +6,13 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.jsp.clinkNBuy.dto.ErrorDto;
 
@@ -44,7 +46,7 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(TimeoutException exception) {
 		return new ErrorDto(exception.getMessage());
 	}
-	
+
 	@ExceptionHandler(NullPointerException.class)
 	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ErrorDto handle(NullPointerException exception) {
@@ -55,5 +57,17 @@ public class GlobalExceptionHandler {
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 	public ErrorDto handle(InputMismatchException exception) {
 		return new ErrorDto(exception.getMessage());
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	@ResponseStatus(code = HttpStatus.FORBIDDEN)
+	public ErrorDto handle(BadCredentialsException exception) {
+		return new ErrorDto("Invalid Password");
+	}
+	
+	@ExceptionHandler(NoResourceFoundException.class)
+	@ResponseStatus(code = HttpStatus.NOT_FOUND)
+	public ErrorDto handle(NoResourceFoundException exception) {
+		return new ErrorDto("Invalid Path Check and Try Again");
 	}
 }

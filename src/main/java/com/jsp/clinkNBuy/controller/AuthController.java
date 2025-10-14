@@ -57,7 +57,7 @@ public class AuthController {
 	public ResponseDto forgotPassword(@Valid @RequestBody PasswordDto passwordDto) throws TimeoutException {
 		return authService.forgotPassword(passwordDto);
 	}
-	
+
 	@PostMapping("/login")
 	@ResponseStatus(code = HttpStatus.OK)
 	public ResponseDto login(@Valid @RequestBody LoginDto loginDto) {
