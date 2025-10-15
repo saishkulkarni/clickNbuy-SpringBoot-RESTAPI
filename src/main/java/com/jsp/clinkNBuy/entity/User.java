@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,13 +29,20 @@ public class User {
 	private Long id;
 	private String name;
 	private String email;
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
 	private Long mobile;
 	@CreationTimestamp
 	private LocalDateTime createdTime;
+	@JsonIgnore
 	private int otp;
+	@JsonIgnore
 	private LocalDateTime otpExpiryTime;
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	private boolean status;
+	@JsonIgnore
+	private int otpAttempts;
+	@JsonIgnore
+	private LocalDateTime lastOtpRequestTime;
 }
