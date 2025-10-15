@@ -40,6 +40,7 @@ public class User {
 	private LocalDateTime otpExpiryTime;
 	@Enumerated(EnumType.STRING)
 	private Role role;
+	@JsonIgnore
 	private boolean status;
 	@JsonIgnore
 	private int otpAttempts;

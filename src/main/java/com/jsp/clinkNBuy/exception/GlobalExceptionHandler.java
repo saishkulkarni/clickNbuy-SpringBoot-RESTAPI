@@ -7,7 +7,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -64,10 +66,28 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(BadCredentialsException exception) {
 		return new ErrorDto("Invalid Password");
 	}
-	
+
 	@ExceptionHandler(NoResourceFoundException.class)
 	@ResponseStatus(code = HttpStatus.NOT_FOUND)
 	public ErrorDto handle(NoResourceFoundException exception) {
 		return new ErrorDto("Invalid Path Check and Try Again");
+	}
+
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	@ResponseStatus(code = HttpStatus.METHOD_NOT_ALLOWED)
+	public ErrorDto handle(HttpRequestMethodNotSupportedException exception) {
+		return new ErrorDto("Check Method and Try Again");
+	}
+
+	@ExceptionHandler(RuntimeException.class)
+	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ErrorDto handle(RuntimeException exception) {
+		return new ErrorDto(exception.toString());
+	}
+
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	@ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+	public ErrorDto handle(AuthorizationDeniedException exception) {
+		return new ErrorDto(exception.toString());
 	}
 }
