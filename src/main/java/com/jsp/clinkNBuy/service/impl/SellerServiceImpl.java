@@ -1,10 +1,16 @@
 package com.jsp.clinkNBuy.service.impl;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.jsp.clinkNBuy.dao.SellerDao;
 import com.jsp.clinkNBuy.dao.UserDao;
@@ -24,6 +30,7 @@ public class SellerServiceImpl implements SellerService {
 
 	SellerDao sellerDao;
 	UserDao userDao;
+	RestTemplate restTemplate;
 
 	@Override
 	public ResponseDto saveProduct(ProductDto dto, Principal principal) {
@@ -43,9 +50,11 @@ public class SellerServiceImpl implements SellerService {
 	}
 
 	@Override
-	public ResponseDto getProducts(Principal principal) {
+	public ResponseDto getProducts(Principal principal, int page, int size, String sortBy, boolean desc) {
 		User user = userDao.findByEmail(principal.getName());
-		List<Product> products = sellerDao.fetchProducts(user);
+		Sort sort = desc ? Sort.by(sortBy).descending() : Sort.by(sortBy);
+		Pageable pageable = PageRequest.of(page - 1, size, sort);
+		List<Product> products = sellerDao.fetchProducts(user, pageable);
 		return new ResponseDto("Products Found", products);
 	}
 
@@ -57,6 +66,47 @@ public class SellerServiceImpl implements SellerService {
 		else
 			throw new AuthorizationDeniedException("You can not deleted this product");
 		return new ResponseDto("Product Deleted Success", product);
+	}
+
+	@Override
+	public ResponseDto addProducts(Principal principal) {
+		Map<String, List<Map<String, Object>>> map = restTemplate.getForObject("https://dummyjson.com/products",
+				Map.class);
+		List<Product> products = new ArrayList<Product>();
+		for (Map<String, Object> productDto : map.get("products")) {
+			String category = (String) productDto.get("category");
+			String name = (String) productDto.get("title");
+			String description = (String) productDto.get("description");
+			String brand = (String) productDto.get("brand");
+			String imageLink = ((List<String>) productDto.get("images")).get(0);
+			Double price = ((Double) productDto.get("price")) * 87.87;
+			Integer stock = (Integer) productDto.get("stock");
+
+			if (sellerDao.isCategoryPresent(category)) {
+				if (sellerDao.isProductUnique(name, brand, price)) {
+					Product product = new Product(null, name, description, price, stock, imageLink,
+							sellerDao.getCategory(category), brand, false, userDao.findByEmail(principal.getName()));
+					products.add(product);
+				} else {
+					throw new DataExistsException("Product Already Exists " + name);
+				}
+			} else {
+				throw new DataNotFoundException("No Category with name: " + category);
+			}
+		}
+		return new ResponseDto("Product Added Success", sellerDao.saveAllProducts(products));
+	}
+
+	@Override
+	public ResponseDto updateProduct(Long id, Product product, Principal principal) {
+		Product existingProduct = sellerDao.findProductById(id);
+		if (existingProduct.getUser().getEmail().equals(principal.getName())) {
+			product.setId(id);
+			product.setUser(existingProduct.getUser());
+			sellerDao.saveProduct(product);
+		} else
+			throw new AuthorizationDeniedException("You can not deleted this product");
+		return new ResponseDto("Product Updated Success", product);
 	}
 
 }
