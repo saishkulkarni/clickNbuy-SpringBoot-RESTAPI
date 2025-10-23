@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
@@ -90,4 +91,11 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(AuthorizationDeniedException exception) {
 		return new ErrorDto(exception.toString());
 	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	@ResponseStatus(code = HttpStatus.FORBIDDEN)
+	public ErrorDto handle(AccessDeniedException exception) {
+		return new ErrorDto(exception.toString());
+	}
+
 }

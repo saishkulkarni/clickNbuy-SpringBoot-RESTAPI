@@ -18,6 +18,7 @@ import com.jsp.clinkNBuy.dto.ResponseDto;
 import com.jsp.clinkNBuy.dto.UserDto;
 import com.jsp.clinkNBuy.service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -29,36 +30,42 @@ public class AuthController {
 	AuthService authService;
 
 	@PostMapping("/register")
+	@Operation(summary = "Register an User or Admin")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public ResponseDto register(@Valid @RequestBody UserDto userDto) {
 		return authService.register(userDto);
 	}
 
 	@PostMapping("/verify-otp")
+	@Operation(summary = "Verify OTP")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public ResponseDto verifyOtp(@RequestBody OtpDto otpDto) throws TimeoutException {
 		return authService.verifyOtp(otpDto);
 	}
 
 	@GetMapping("/resend-otp")
+	@Operation(summary = "Resend OTP")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public ResponseDto resendOtp(@RequestParam String email) {
 		return authService.resendOtp(email);
 	}
 
 	@GetMapping("/forgot-password")
+	@Operation(summary = "Forgot Password")
 	@ResponseStatus(code = HttpStatus.OK)
 	public ResponseDto forgotPassword(@RequestParam String email) {
 		return authService.forgotPassword(email);
 	}
 
 	@PostMapping("/forgot-password")
+	@Operation(summary = "Reset Password")
 	@ResponseStatus(code = HttpStatus.OK)
 	public ResponseDto forgotPassword(@Valid @RequestBody PasswordDto passwordDto) throws TimeoutException {
 		return authService.forgotPassword(passwordDto);
 	}
 
 	@PostMapping("/login")
+	@Operation(summary = "Login")
 	@ResponseStatus(code = HttpStatus.OK)
 	public ResponseDto login(@Valid @RequestBody LoginDto loginDto) {
 		return authService.login(loginDto);
