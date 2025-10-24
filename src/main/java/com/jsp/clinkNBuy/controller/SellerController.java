@@ -20,6 +20,7 @@ import com.jsp.clinkNBuy.entity.Product;
 import com.jsp.clinkNBuy.service.SellerService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -31,14 +32,14 @@ public class SellerController {
 	SellerService sellerService;
 
 	@PostMapping("/products")
-	@Operation(summary = "Add Seller Products")
+	@Operation(summary = "Add Seller Products", security = @SecurityRequirement(name = "bearerAuth"))
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseDto saveProduct(@Valid @RequestBody ProductDto productDto, Principal principal) {
 		return sellerService.saveProduct(productDto, principal);
 	}
 
 	@GetMapping("/products")
-	@Operation(summary = "Fetch Seller Products")
+	@Operation(summary = "Fetch Seller Products", security = @SecurityRequirement(name = "bearerAuth"))
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseDto getProducts(Principal principal, @RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sort,
@@ -47,7 +48,7 @@ public class SellerController {
 	}
 
 	@DeleteMapping("/products/{id}")
-	@Operation(summary = "Delete Seller Product")
+	@Operation(summary = "Delete Seller Product", security = @SecurityRequirement(name = "bearerAuth"))
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public ResponseDto deleteProduct(@PathVariable Long id, Principal principal) {
 		return sellerService.deleteProduct(id, principal);
@@ -61,9 +62,9 @@ public class SellerController {
 	}
 
 	@PutMapping("/products/{id}")
-	@Operation(summary = "Update Seller Product")
+	@Operation(summary = "Update Seller Product", security = @SecurityRequirement(name = "bearerAuth"))
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseDto deleteProduct(@PathVariable Long id, @RequestBody Product product, Principal principal) {
-		return sellerService.updateProduct(id,product, principal);
+		return sellerService.updateProduct(id, product, principal);
 	}
 }

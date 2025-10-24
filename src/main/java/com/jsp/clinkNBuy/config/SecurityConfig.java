@@ -39,12 +39,12 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/user/auth/**").permitAll()
-						.requestMatchers("/","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**").permitAll()
+						.requestMatchers("/", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
 								"/swagger-resources/**", "/webjars/**")
 						.permitAll().requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/v1/user/**").hasRole("USER").requestMatchers("/api/v1/seller/**")
-						.hasRole("SELLER").anyRequest().authenticated())
+						.hasRole("SELLER").requestMatchers("/api/v1/**").permitAll().anyRequest().authenticated())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}

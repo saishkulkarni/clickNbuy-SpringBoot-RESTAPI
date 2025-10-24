@@ -97,5 +97,11 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(AccessDeniedException exception) {
 		return new ErrorDto(exception.toString());
 	}
+	
+	@ExceptionHandler(OutOfStockException.class)
+	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+	public ErrorDto handle(OutOfStockException exception) {
+		return new ErrorDto(exception.getMessage());
+	}
 
 }

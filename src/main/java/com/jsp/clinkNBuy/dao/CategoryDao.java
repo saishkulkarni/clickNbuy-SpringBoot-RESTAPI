@@ -12,9 +12,16 @@ import lombok.AllArgsConstructor;
 
 @Repository
 @AllArgsConstructor
-public class AdminDao {
-
+public class CategoryDao {
 	CategoryRepository categoryRepository;
+
+	public Category getCategory(String category) {
+		return categoryRepository.findByName(category);
+	}
+
+	public boolean isCategoryPresent(String category) {
+		return categoryRepository.existsByName(category);
+	}
 
 	public boolean isCategoryUnique(String name) {
 		return !categoryRepository.existsByName(name);

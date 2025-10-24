@@ -12,7 +12,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.jsp.clinkNBuy.dao.SellerDao;
+import com.jsp.clinkNBuy.dao.CategoryDao;
+import com.jsp.clinkNBuy.dao.ProductDao;
 import com.jsp.clinkNBuy.dao.UserDao;
 import com.jsp.clinkNBuy.dto.ProductDto;
 import com.jsp.clinkNBuy.dto.ResponseDto;
@@ -28,18 +29,19 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SellerServiceImpl implements SellerService {
 
-	SellerDao sellerDao;
+	CategoryDao categoryDao;
+	ProductDao productDao;
 	UserDao userDao;
 	RestTemplate restTemplate;
 
 	@Override
 	public ResponseDto saveProduct(ProductDto dto, Principal principal) {
-		if (sellerDao.isCategoryPresent(dto.getCategory())) {
-			if (sellerDao.isProductUnique(dto.getName(), dto.getBrand(), dto.getPrice())) {
+		if (categoryDao.isCategoryPresent(dto.getCategory())) {
+			if (productDao.isProductUnique(dto.getName(), dto.getBrand(), dto.getPrice())) {
 				Product product = new Product(null, dto.getName(), dto.getDescription(), dto.getPrice(), dto.getStock(),
-						dto.getImageLink(), sellerDao.getCategory(dto.getCategory()), dto.getBrand(), false,
+						dto.getImageLink(), categoryDao.getCategory(dto.getCategory()), dto.getBrand(), false,
 						userDao.findByEmail(principal.getName()));
-				sellerDao.saveProduct(product);
+				productDao.saveProduct(product);
 				return new ResponseDto("Product Added Success", product);
 			} else {
 				throw new DataExistsException("Product Already Exists");
@@ -54,15 +56,15 @@ public class SellerServiceImpl implements SellerService {
 		User user = userDao.findByEmail(principal.getName());
 		Sort sort = desc ? Sort.by(sortBy).descending() : Sort.by(sortBy);
 		Pageable pageable = PageRequest.of(page - 1, size, sort);
-		List<Product> products = sellerDao.fetchProducts(user, pageable);
+		List<Product> products = productDao.fetchProducts(user, pageable);
 		return new ResponseDto("Products Found", products);
 	}
 
 	@Override
 	public ResponseDto deleteProduct(Long id, Principal principal) {
-		Product product = sellerDao.findProductById(id);
+		Product product = productDao.findProductById(id);
 		if (product.getUser().getEmail().equals(principal.getName()))
-			sellerDao.deleteProduct(id);
+			productDao.deleteProduct(id);
 		else
 			throw new AuthorizationDeniedException("You can not deleted this product");
 		return new ResponseDto("Product Deleted Success", product);
@@ -82,10 +84,10 @@ public class SellerServiceImpl implements SellerService {
 			Double price = ((Double) productDto.get("price")) * 87.87;
 			Integer stock = (Integer) productDto.get("stock");
 
-			if (sellerDao.isCategoryPresent(category)) {
-				if (sellerDao.isProductUnique(name, brand, price)) {
+			if (categoryDao.isCategoryPresent(category)) {
+				if (productDao.isProductUnique(name, brand, price)) {
 					Product product = new Product(null, name, description, price, stock, imageLink,
-							sellerDao.getCategory(category), brand, false, userDao.findByEmail(principal.getName()));
+							categoryDao.getCategory(category), brand, false, userDao.findByEmail(principal.getName()));
 					products.add(product);
 				} else {
 					throw new DataExistsException("Product Already Exists " + name);
@@ -94,16 +96,16 @@ public class SellerServiceImpl implements SellerService {
 				throw new DataNotFoundException("No Category with name: " + category);
 			}
 		}
-		return new ResponseDto("Product Added Success", sellerDao.saveAllProducts(products));
+		return new ResponseDto("Product Added Success", productDao.saveAllProducts(products));
 	}
 
 	@Override
 	public ResponseDto updateProduct(Long id, Product product, Principal principal) {
-		Product existingProduct = sellerDao.findProductById(id);
+		Product existingProduct = productDao.findProductById(id);
 		if (existingProduct.getUser().getEmail().equals(principal.getName())) {
 			product.setId(id);
 			product.setUser(existingProduct.getUser());
-			sellerDao.saveProduct(product);
+			productDao.saveProduct(product);
 		} else
 			throw new AuthorizationDeniedException("You can not deleted this product");
 		return new ResponseDto("Product Updated Success", product);
