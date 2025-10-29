@@ -15,7 +15,7 @@ public class ProductDto {
 	@NotNull(message = "Price is Required")
 	private Double price;
 	@NotNull(message = "Stock is Required")
-	private Integer stock;
+	private Long stock;
 	@NotEmpty(message = "Image is Required")
 	private String imageLink;
 	@NotEmpty(message = "Category is Required")

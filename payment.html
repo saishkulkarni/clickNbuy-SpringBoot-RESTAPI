@@ -1,0 +1,46 @@
+<html>
+<body>
+<button id="rzp-button1">Pay with Razorpay</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+		  "key": "rzp_test_RYTf0ty4hjkSUm",
+		  "amount": "17845",
+		  "currency": "INR",
+		  "name": "Acme Corp",
+		  "description": "Test Transaction",
+		  "order_id": "order_RZH8eO8SekiPv1",
+		  "handler": function (response){
+		      // response contains: razorpay_payment_id, razorpay_order_id, razorpay_signature
+		      fetch("http://localhost:1234/api/v1/user/payment", {
+		          method: "POST",
+		          headers: {
+		              "Content-Type": "application/json",
+		              "Authorization": `Bearer ${jwtToken}`
+		          },
+		          body: JSON.stringify({
+		              razorpay_payment_id: response.razorpay_payment_id,
+		              razorpay_order_id: response.razorpay_order_id,
+		              razorpay_signature: response.razorpay_signature
+		          })
+		      })
+		      .then(res => res.json())
+		      .then(data => console.log("Payment verified:", data))
+		      .catch(err => console.error(err));
+		  },
+		  "theme": {
+		      "color": "#3399cc"
+		  }
+		};
+
+		var rzp1 = new Razorpay(options);
+		document.getElementById('rzp-button1').onclick = function(e){
+		    rzp1.open();
+		    e.preventDefault();
+		}
+
+</script>
+
+</body>
+</html>
+
